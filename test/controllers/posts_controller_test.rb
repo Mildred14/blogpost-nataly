@@ -11,38 +11,52 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get new" do
-    get new_post_url
+    get new_post_url, @headers
     assert_response :success
   end
 
   test "should create post" do
     assert_difference('Post.count') do
-      post posts_url, params: { post: { title: @post.title } }
+      post posts_url, params: { post: { title: @post.title } }, headers: http_login
     end
 
     assert_redirected_to post_url(Post.last)
   end
 
   test "should show post" do
-    get post_url(@post)
+    get post_url(@post), @headers
     assert_response :success
   end
 
   test "should get edit" do
-    get edit_post_url(@post)
+    get edit_post_url(@post), @headers
     assert_response :success
   end
 
   test "should update post" do
-    patch post_url(@post), params: { post: { title: @post.title } }
+    put post_url(@post), params: { post: { title: @post.title } }, headers: http_login
     assert_redirected_to post_url(@post)
   end
 
   test "should destroy post" do
     assert_difference('Post.count', -1) do
-      delete post_url(@post)
+      delete post_url(@post), headers: http_login
     end
 
     assert_redirected_to posts_url
+  end
+
+  def http_login
+    username = 'natalyadminuser'
+    password = 'natalypsw96'
+
+    {
+      Authorization: ActionController::HttpAuthentication::Basic.
+                          encode_credentials(username, password)
+    }
+  end
+
+  def setup
+    @headers = { headers: http_login }
   end
 end

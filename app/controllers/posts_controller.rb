@@ -1,5 +1,6 @@
 class PostsController < ApplicationController
   before_action :set_post, only: %i[ show edit update destroy ]
+  before_action :authenticate_superadmin!, except: :index
 
   # GET /posts or /posts.json
   def index
@@ -57,13 +58,25 @@ class PostsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_post
-      @post = Post.find(params[:id])
+  # Use callbacks to share common setup or constraints between actions.
+  def set_post
+    @post = Post.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def post_params
+    params.require(:post).permit(:title, :content)
+  end
+
+  def authenticate_superadmin!
+    session[:super_admin] = authenticate_or_request_with_http_basic("Restricted Access") do |username, password|
+      username == "natalyadminuser" && password == "natalypsw96" 
     end
 
-    # Only allow a list of trusted parameters through.
-    def post_params
-      params.require(:post).permit(:title, :content)
-    end
+    return render status: :not_authorized unless super_admin?
+  end
+
+  def super_admin?
+    session[:super_admin]
+  end
 end
